@@ -23,7 +23,10 @@
       "./node_modules/@types"
     ]
   },
+  "include": ["lib/lambda"],
   "exclude": [
+    "bin",
+    "test",
     "node_modules",
     "cdk.out"
   ]
