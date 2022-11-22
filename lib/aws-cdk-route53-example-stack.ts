@@ -54,14 +54,6 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       value: zone.hostedZoneArn,
     });
 
-    // new cdk.CfnOutput(this, "HostedZoneNameServers", {
-    //   exportName: "hostedZoneNameServers",
-    //   value:
-    //     zone.hostedZoneNameServers
-    //       ?.filter((ns) => typeof ns === "string")
-    //       .join(",") || "",
-    // });
-
     const api = new apigateway.RestApi(this, `RestApiDomainTester`, {
       restApiName: "restApiDomainTester",
       defaultCorsPreflightOptions: {
@@ -72,7 +64,6 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       domainName: {
         certificate,
         domainName: props.apiGatewaySubdomain,
-        basePath: "dev",
         endpointType: EndpointType.REGIONAL,
         securityPolicy: SecurityPolicy.TLS_1_2,
       },
