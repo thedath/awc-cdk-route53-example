@@ -9,7 +9,6 @@ import { CertificateValidation } from "aws-cdk-lib/aws-certificatemanager";
 
 import * as path from "path";
 import { EndpointType, SecurityPolicy } from "aws-cdk-lib/aws-apigateway";
-import { RemovalPolicy } from "aws-cdk-lib";
 
 export interface AwsCdkRoute53ExampleStackProps extends cdk.StackProps {
   domainName: string;
@@ -55,10 +54,13 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       value: zone.hostedZoneArn,
     });
 
-    new cdk.CfnOutput(this, "HostedZoneNameServers", {
-      exportName: "hostedZoneNameServers",
-      value: zone.hostedZoneNameServers?.join(",") || "NO NAME SERVERS",
-    });
+    // new cdk.CfnOutput(this, "HostedZoneNameServers", {
+    //   exportName: "hostedZoneNameServers",
+    //   value:
+    //     zone.hostedZoneNameServers
+    //       ?.filter((ns) => typeof ns === "string")
+    //       .join(",") || "",
+    // });
 
     const api = new apigateway.RestApi(this, `RestApiDomainTester`, {
       restApiName: "restApiDomainTester",
@@ -70,7 +72,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       domainName: {
         certificate,
         domainName: props.apiGatewaySubdomain,
-        basePath: "/dev",
+        basePath: "dev",
         endpointType: EndpointType.REGIONAL,
         securityPolicy: SecurityPolicy.TLS_1_2,
       },
