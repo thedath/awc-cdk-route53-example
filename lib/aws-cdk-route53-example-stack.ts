@@ -62,11 +62,11 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
       },
-      deployOptions: { stageName: "dev" },
+      deployOptions: { stageName: "lake" },
       domainName: {
         certificate,
         domainName: props.apiGatewaySubdomain,
-        endpointType: EndpointType.REGIONAL,
+        endpointType: EndpointType.EDGE,
         securityPolicy: SecurityPolicy.TLS_1_2,
       },
     });
@@ -88,7 +88,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       testDomainLambda
     );
 
-    const hello = api.root.addResource("hello");
+    const hello = api.root.addResource("bite");
     hello.addMethod("GET", lambdaIntegration);
 
     new route53.ARecord(this, `${TAG}-a-record`, {
