@@ -58,6 +58,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     const api = new apigateway.RestApi(this, `${TAG}-rest-api`, {
       restApiName: `${TAG}-rest-api`,
+      endpointTypes: [EndpointType.EDGE],
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
