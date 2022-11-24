@@ -29,43 +29,32 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     ///////////////////// DOMAIN & SUB DOMAIN SETUP /////////////////////
 
-    const zone = new route53.HostedZone(this, `${TAG1}-hosted-zone`, {
+    const zone = new route53.HostedZone(this, `testing-hosted-zone`, {
       zoneName: props.domainName,
     });
 
     const certificate = new certificatemanager.Certificate(
       this,
-      `${TAG1}-certificate`,
+      `testing-certificate`,
       {
-        certificateName: `${TAG1}-certificate`,
+        certificateName: `testing-certificate`,
         domainName: props.domainName,
         subjectAlternativeNames: props.subDomainPrefixes,
         validation: CertificateValidation.fromDns(zone),
       }
     );
 
-    const apiDomainName = new apigateway.DomainName(
-      this,
-      `${TAG1}-domain-name`,
-      {
-        certificate,
-        domainName: props.apiGatewaySubdomain,
-        endpointType: EndpointType.EDGE,
-        securityPolicy: SecurityPolicy.TLS_1_2,
-      }
-    );
-
-    new cdk.CfnOutput(this, `${TAG1}-zone-name`, {
+    new cdk.CfnOutput(this, `testing-zone-name`, {
       exportName: "zoneName",
       value: zone.zoneName,
     });
 
-    new cdk.CfnOutput(this, `${TAG1}-hosted-zone-id`, {
+    new cdk.CfnOutput(this, `testing-hosted-zone-id`, {
       exportName: "hostedZoneId",
       value: zone.hostedZoneId,
     });
 
-    new cdk.CfnOutput(this, `${TAG1}-hosted-zone-arn`, {
+    new cdk.CfnOutput(this, `testing-hosted-zone-arn`, {
       exportName: "hostedZoneArn",
       value: zone.hostedZoneArn,
     });
@@ -88,12 +77,13 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
       },
-      // deployOptions: { stageName: "lake" },
+      deployOptions: { stageName: "lake" },
       domainName: {
         certificate,
         domainName: props.apiGatewaySubdomain,
         endpointType: EndpointType.EDGE,
         securityPolicy: SecurityPolicy.TLS_1_2,
+        basePath: "alligator",
       },
     });
 
@@ -101,19 +91,6 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     const biteResource = api1.root.addResource("bite");
     biteResource.addMethod("GET", integration1);
-
-    const stage1 = new apigateway.Stage(this, `${TAG1}-stage`, {
-      stageName: "lake",
-      description: "Alligator in a lake, get readying to bite",
-      deployment: new apigateway.Deployment(this, `${TAG1}-api-deployment`, {
-        api: api1,
-      }),
-    });
-
-    api1.domainName?.addBasePathMapping(api1, {
-      stage: stage1,
-      basePath: "alligator",
-    });
 
     new route53.ARecord(this, `${TAG1}-a-record`, {
       zone,
@@ -140,12 +117,13 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
       },
-      // deployOptions: { stageName: "river" },
+      deployOptions: { stageName: "river" },
       domainName: {
         certificate,
         domainName: props.apiGatewaySubdomain,
         endpointType: EndpointType.EDGE,
         securityPolicy: SecurityPolicy.TLS_1_2,
+        basePath: "crocodile",
       },
     });
 
@@ -160,11 +138,6 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       deployment: new apigateway.Deployment(this, `${TAG2}-api-deployment`, {
         api: api2,
       }),
-    });
-
-    api2.domainName?.addBasePathMapping(api2, {
-      stage: stage2,
-      basePath: "crocodile",
     });
 
     new route53.ARecord(this, `${TAG2}-a-record`, {
