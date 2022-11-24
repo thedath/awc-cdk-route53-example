@@ -9,12 +9,9 @@ import { CertificateValidation } from "aws-cdk-lib/aws-certificatemanager";
 
 import * as path from "path";
 import { EndpointType, SecurityPolicy } from "aws-cdk-lib/aws-apigateway";
+import { RemovalPolicy } from "aws-cdk-lib";
 
-export interface AwsCdkRoute53ExampleStackProps extends cdk.StackProps {
-  domainName: string;
-  subDomainPrefixes: string[];
-  apiGatewaySubdomain: string;
-}
+export interface AwsCdkRoute53ExampleStackProps extends cdk.StackProps {}
 
 const TAG1 = "alligator";
 const TAG2 = "crocodile";
@@ -30,7 +27,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
     ///////////////////// DOMAIN & SUB DOMAIN SETUP /////////////////////
 
     const zone = new route53.HostedZone(this, `testing-hosted-zone`, {
-      zoneName: props.domainName,
+      zoneName: "lab.otterz.co",
     });
 
     const certificate = new certificatemanager.Certificate(
@@ -38,11 +35,12 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       `testing-certificate`,
       {
         certificateName: `testing-certificate`,
-        domainName: props.domainName,
-        subjectAlternativeNames: props.subDomainPrefixes,
+        domainName: "lab.otterz.co",
+        subjectAlternativeNames: ["*.lab.otterz.co"],
         validation: CertificateValidation.fromDns(zone),
       }
     );
+    certificate.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     new cdk.CfnOutput(this, `testing-zone-name`, {
       exportName: "zoneName",
@@ -80,10 +78,9 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       deployOptions: { stageName: "lake" },
       domainName: {
         certificate,
-        domainName: props.apiGatewaySubdomain,
+        domainName: "alligator.lab.otterz.co",
         endpointType: EndpointType.EDGE,
         securityPolicy: SecurityPolicy.TLS_1_2,
-        basePath: "alligator",
       },
     });
 
@@ -94,7 +91,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     new route53.ARecord(this, `${TAG1}-a-record`, {
       zone,
-      recordName: props.apiGatewaySubdomain,
+      recordName: "alligator.lab.otterz.co",
       target: route53.RecordTarget.fromAlias(new targets.ApiGateway(api1)),
       deleteExisting: true,
     });
@@ -120,7 +117,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       deployOptions: { stageName: "river" },
       domainName: {
         certificate,
-        domainName: props.apiGatewaySubdomain,
+        domainName: "crocodile.lab.otterz.co",
         endpointType: EndpointType.EDGE,
         securityPolicy: SecurityPolicy.TLS_1_2,
         basePath: "crocodile",
@@ -134,7 +131,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     new route53.ARecord(this, `${TAG2}-a-record`, {
       zone,
-      recordName: props.apiGatewaySubdomain,
+      recordName: "crocodile.lab.otterz.co",
       target: route53.RecordTarget.fromAlias(new targets.ApiGateway(api2)),
       deleteExisting: true,
     });
