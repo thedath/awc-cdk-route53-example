@@ -57,7 +57,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     new route53.ARecord(this, `${TAG2}-a-record`, {
       zone,
-      recordName: "crocodile.apiv1.otterz.co",
+      recordName: "sub.apiv1.otterz.co",
       target: route53.RecordTarget.fromAlias(
         new targets.ApiGatewayDomain(subDomainName)
       ),
