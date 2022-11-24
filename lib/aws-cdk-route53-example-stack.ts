@@ -27,7 +27,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
     ///////////////////// DOMAIN & SUB DOMAIN SETUP /////////////////////
 
     const zone = new route53.HostedZone(this, `testing-hosted-zone`, {
-      zoneName: "lab.otterz.co",
+      zoneName: "apiv1.otterz.co",
     });
 
     const certificate = new certificatemanager.Certificate(
@@ -35,8 +35,8 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       `testing-certificate`,
       {
         certificateName: `testing-certificate`,
-        domainName: "lab.otterz.co",
-        subjectAlternativeNames: ["*.lab.otterz.co"],
+        domainName: "apiv1.otterz.co",
+        subjectAlternativeNames: ["*.apiv1.otterz.co"],
         validation: CertificateValidation.fromDns(zone),
       }
     );
@@ -78,7 +78,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       deployOptions: { stageName: "lake" },
       domainName: {
         certificate,
-        domainName: "alligator.lab.otterz.co",
+        domainName: "alligator.apiv1.otterz.co",
         endpointType: EndpointType.EDGE,
         securityPolicy: SecurityPolicy.TLS_1_2,
       },
@@ -91,7 +91,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     new route53.ARecord(this, `${TAG1}-a-record`, {
       zone,
-      recordName: "alligator.lab.otterz.co",
+      recordName: "alligator.apiv1.otterz.co",
       target: route53.RecordTarget.fromAlias(new targets.ApiGateway(api1)),
       deleteExisting: true,
     });
@@ -117,7 +117,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       deployOptions: { stageName: "river" },
       domainName: {
         certificate,
-        domainName: "crocodile.lab.otterz.co",
+        domainName: "crocodile.apiv1.otterz.co",
         endpointType: EndpointType.EDGE,
         securityPolicy: SecurityPolicy.TLS_1_2,
         basePath: "crocodile",
@@ -131,7 +131,7 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     new route53.ARecord(this, `${TAG2}-a-record`, {
       zone,
-      recordName: "crocodile.lab.otterz.co",
+      recordName: "crocodile.apiv1.otterz.co",
       target: route53.RecordTarget.fromAlias(new targets.ApiGateway(api2)),
       deleteExisting: true,
     });
