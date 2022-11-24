@@ -132,14 +132,6 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
     const diveResource = api2.root.addResource("dive");
     diveResource.addMethod("GET", integration2);
 
-    const stage2 = new apigateway.Stage(this, `${TAG2}-stage`, {
-      stageName: "river",
-      description: "Crocodile in a river, get readying to dive",
-      deployment: new apigateway.Deployment(this, `${TAG2}-api-deployment`, {
-        api: api2,
-      }),
-    });
-
     new route53.ARecord(this, `${TAG2}-a-record`, {
       zone,
       recordName: props.apiGatewaySubdomain,
