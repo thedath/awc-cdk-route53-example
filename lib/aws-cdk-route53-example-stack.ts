@@ -9,12 +9,9 @@ import { CertificateValidation } from "aws-cdk-lib/aws-certificatemanager";
 
 import * as path from "path";
 import { EndpointType, SecurityPolicy } from "aws-cdk-lib/aws-apigateway";
+import { RemovalPolicy } from "aws-cdk-lib";
 
-export interface AwsCdkRoute53ExampleStackProps extends cdk.StackProps {
-  domainName: string;
-  subDomainPrefixes: string[];
-  apiGatewaySubdomain: string;
-}
+export interface AwsCdkRoute53ExampleStackProps extends cdk.StackProps {}
 
 const TAG1 = "alligator";
 const TAG2 = "crocodile";
@@ -29,43 +26,55 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
 
     ///////////////////// DOMAIN & SUB DOMAIN SETUP /////////////////////
 
-    const zone = new route53.HostedZone(this, `${TAG1}-hosted-zone`, {
-      zoneName: props.domainName,
+    const zone = new route53.HostedZone(this, `testing-hosted-zone`, {
+      zoneName: "apiv1.otterz.co",
     });
+    zone.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     const certificate = new certificatemanager.Certificate(
       this,
-      `${TAG1}-certificate`,
+      `testing-certificate`,
       {
-        certificateName: `${TAG1}-certificate`,
-        domainName: props.domainName,
-        subjectAlternativeNames: props.subDomainPrefixes,
+        certificateName: `testing-certificate`,
+        domainName: "apiv1.otterz.co",
+        subjectAlternativeNames: ["sub.apiv1.otterz.co"],
         validation: CertificateValidation.fromDns(zone),
       }
     );
+    certificate.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
-    const apiDomainName = new apigateway.DomainName(
+    const subDomainName = new apigateway.DomainName(
       this,
-      `${TAG1}-domain-name`,
+      "testing-sub-domain-name",
       {
         certificate,
-        domainName: props.apiGatewaySubdomain,
+        domainName: "sub.apiv1.otterz.co",
         endpointType: EndpointType.EDGE,
         securityPolicy: SecurityPolicy.TLS_1_2,
       }
     );
+    subDomainName.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
-    new cdk.CfnOutput(this, `${TAG1}-zone-name`, {
+    new route53.ARecord(this, `${TAG2}-a-record`, {
+      zone,
+      recordName: "sub.apiv1.otterz.co",
+      target: route53.RecordTarget.fromAlias(
+        new targets.ApiGatewayDomain(subDomainName)
+      ),
+      deleteExisting: true,
+    });
+
+    new cdk.CfnOutput(this, `testing-zone-name`, {
       exportName: "zoneName",
       value: zone.zoneName,
     });
 
-    new cdk.CfnOutput(this, `${TAG1}-hosted-zone-id`, {
+    new cdk.CfnOutput(this, `testing-hosted-zone-id`, {
       exportName: "hostedZoneId",
       value: zone.hostedZoneId,
     });
 
-    new cdk.CfnOutput(this, `${TAG1}-hosted-zone-arn`, {
+    new cdk.CfnOutput(this, `testing-hosted-zone-arn`, {
       exportName: "hostedZoneArn",
       value: zone.hostedZoneArn,
     });
@@ -88,13 +97,13 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
       },
-      // deployOptions: { stageName: "lake" },
-      domainName: {
-        certificate,
-        domainName: props.apiGatewaySubdomain,
-        endpointType: EndpointType.EDGE,
-        securityPolicy: SecurityPolicy.TLS_1_2,
-      },
+      deployOptions: { stageName: "lake" },
+      // domainName: {
+      //   certificate,
+      //   domainName: "alligator.apiv1.otterz.co",
+      //   endpointType: EndpointType.EDGE,
+      //   securityPolicy: SecurityPolicy.TLS_1_2,
+      // },
     });
 
     const integration1 = new apigateway.LambdaIntegration(lambda1);
@@ -102,24 +111,10 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
     const biteResource = api1.root.addResource("bite");
     biteResource.addMethod("GET", integration1);
 
-    const stage1 = new apigateway.Stage(this, `${TAG1}-stage`, {
-      stageName: "lake",
-      description: "Alligator in a lake, get readying to bite",
-      deployment: new apigateway.Deployment(this, `${TAG1}-api-deployment`, {
-        api: api1,
-      }),
-    });
-
-    api1.domainName?.addBasePathMapping(api1, {
-      stage: stage1,
+    new apigateway.BasePathMapping(this, `${TAG1}-base-path-mapping`, {
+      domainName: subDomainName,
+      restApi: api1,
       basePath: "alligator",
-    });
-
-    new route53.ARecord(this, `${TAG1}-a-record`, {
-      zone,
-      recordName: props.apiGatewaySubdomain,
-      target: route53.RecordTarget.fromAlias(new targets.ApiGateway(api1)),
-      deleteExisting: true,
     });
 
     ///////////////////// API 2 DEFINITION /////////////////////
@@ -140,13 +135,14 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
       },
-      // deployOptions: { stageName: "river" },
-      domainName: {
-        certificate,
-        domainName: props.apiGatewaySubdomain,
-        endpointType: EndpointType.EDGE,
-        securityPolicy: SecurityPolicy.TLS_1_2,
-      },
+      deployOptions: { stageName: "river" },
+      // domainName: {
+      //   certificate,
+      //   domainName: "crocodile.apiv1.otterz.co",
+      //   endpointType: EndpointType.EDGE,
+      //   securityPolicy: SecurityPolicy.TLS_1_2,
+      //   basePath: "crocodile",
+      // },
     });
 
     const integration2 = new apigateway.LambdaIntegration(lambda2);
@@ -154,24 +150,10 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
     const diveResource = api2.root.addResource("dive");
     diveResource.addMethod("GET", integration2);
 
-    const stage2 = new apigateway.Stage(this, `${TAG2}-stage`, {
-      stageName: "river",
-      description: "Crocodile in a river, get readying to dive",
-      deployment: new apigateway.Deployment(this, `${TAG2}-api-deployment`, {
-        api: api2,
-      }),
-    });
-
-    api2.domainName?.addBasePathMapping(api2, {
-      stage: stage2,
+    new apigateway.BasePathMapping(this, `${TAG2}-base-path-mapping`, {
+      domainName: subDomainName,
+      restApi: api2,
       basePath: "crocodile",
-    });
-
-    new route53.ARecord(this, `${TAG2}-a-record`, {
-      zone,
-      recordName: props.apiGatewaySubdomain,
-      target: route53.RecordTarget.fromAlias(new targets.ApiGateway(api2)),
-      deleteExisting: true,
     });
   }
 }
