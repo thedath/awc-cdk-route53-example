@@ -89,13 +89,12 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
         allowMethods: apigateway.Cors.ALL_METHODS,
       },
       // deployOptions: { stageName: "lake" },
-      // domainName: {
-      //   certificate,
-      //   domainName: props.apiGatewaySubdomain,
-      //   endpointType: EndpointType.EDGE,
-      //   securityPolicy: SecurityPolicy.TLS_1_2,
-      //   basePath: "alligator",
-      // },
+      domainName: {
+        certificate,
+        domainName: props.apiGatewaySubdomain,
+        endpointType: EndpointType.EDGE,
+        securityPolicy: SecurityPolicy.TLS_1_2,
+      },
     });
 
     const integration1 = new apigateway.LambdaIntegration(lambda1);
@@ -103,13 +102,15 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
     const biteResource = api1.root.addResource("bite");
     biteResource.addMethod("GET", integration1);
 
-    const stage1 = new apigateway.Stage(this, "", {
+    const stage1 = new apigateway.Stage(this, `${TAG1}-stage`, {
       stageName: "lake",
       description: "Alligator in a lake, get readying to bite",
-      deployment: new apigateway.Deployment(this, "", { api: api1 }),
+      deployment: new apigateway.Deployment(this, `${TAG1}-api-deployment`, {
+        api: api1,
+      }),
     });
 
-    apiDomainName.addBasePathMapping(api1, {
+    api1.domainName?.addBasePathMapping(api1, {
       stage: stage1,
       basePath: "alligator",
     });
@@ -121,6 +122,8 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       deleteExisting: true,
     });
 
+    ///////////////////// API 2 DEFINITION /////////////////////
+
     const lambda2 = new lambda.Function(this, `${TAG2}-lambda-function`, {
       functionName: `${TAG2}-lambda-function`,
       runtime: lambda.Runtime.NODEJS_14_X,
@@ -130,8 +133,6 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
       }),
     });
 
-    ///////////////////// API 2 DEFINITION /////////////////////
-
     const api2 = new apigateway.RestApi(this, `${TAG2}-rest-api`, {
       restApiName: `${TAG2}-rest-api`,
       endpointTypes: [EndpointType.EDGE],
@@ -139,15 +140,13 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
       },
-
       // deployOptions: { stageName: "river" },
-      // domainName: {
-      //   certificate,
-      //   domainName: props.apiGatewaySubdomain,
-      //   endpointType: EndpointType.EDGE,
-      //   securityPolicy: SecurityPolicy.TLS_1_2,
-      //   basePath: "crocodile",
-      // },
+      domainName: {
+        certificate,
+        domainName: props.apiGatewaySubdomain,
+        endpointType: EndpointType.EDGE,
+        securityPolicy: SecurityPolicy.TLS_1_2,
+      },
     });
 
     const integration2 = new apigateway.LambdaIntegration(lambda2);
@@ -155,13 +154,15 @@ export class AwsCdkRoute53ExampleStack extends cdk.Stack {
     const diveResource = api2.root.addResource("dive");
     diveResource.addMethod("GET", integration2);
 
-    const stage2 = new apigateway.Stage(this, "", {
+    const stage2 = new apigateway.Stage(this, `${TAG2}-stage`, {
       stageName: "river",
       description: "Crocodile in a river, get readying to dive",
-      deployment: new apigateway.Deployment(this, "", { api: api2 }),
+      deployment: new apigateway.Deployment(this, `${TAG2}-api-deployment`, {
+        api: api2,
+      }),
     });
 
-    apiDomainName.addBasePathMapping(api2, {
+    api2.domainName?.addBasePathMapping(api2, {
       stage: stage2,
       basePath: "crocodile",
     });
