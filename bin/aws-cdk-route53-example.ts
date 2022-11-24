@@ -5,9 +5,9 @@ import { AwsCdkRoute53ExampleStack } from "../lib/aws-cdk-route53-example-stack"
 
 const app = new cdk.App();
 new AwsCdkRoute53ExampleStack(app, "AwsCdkRoute53ExampleStack", {
-  domainName: "playground.otterz.co",
-  apiGatewaySubdomain: "api.playground.otterz.co",
-  subDomainPrefixes: ["api.playground.otterz.co"],
+  domainName: "lab.otterz.co",
+  apiGatewaySubdomain: "api.lab.otterz.co",
+  subDomainPrefixes: ["api.lab.otterz.co"],
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
